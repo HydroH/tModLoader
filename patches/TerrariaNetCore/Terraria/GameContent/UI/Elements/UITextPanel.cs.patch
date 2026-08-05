@@ -1,0 +1,40 @@
+--- src/Terraria/Terraria/GameContent/UI/Elements/UITextPanel.cs
++++ src/TerrariaNetCore/Terraria/GameContent/UI/Elements/UITextPanel.cs
+@@ -56,6 +_,20 @@
+ 		}
+ 	}
+ 
++	protected virtual Vector2 TextDrawPosition {
++		get {
++			CalculatedStyle innerDimensions = GetInnerDimensions();
++			Vector2 result = innerDimensions.Position();
++			result.X += (innerDimensions.Width - _textSize.X) * TextHAlign;
++			if (_isLarge)
++				result.Y -= 10f * _textScale * _textScale;
++			else
++				result.Y -= 2f * _textScale;
++
++			return result;
++		}
++	}
++
+ 	public UITextPanel(T text, float textScale = 1f, bool large = false)
+ 	{
+ 		SetText(text, textScale, large);
+@@ -109,9 +_,14 @@
+ 			text = _asterisks;
+ 		}
+ 
++		DrawText(spriteBatch, text, TextDrawPosition, _color);
++	}
++
++	protected void DrawText(SpriteBatch spriteBatch, string text, Vector2 position, Color color)
++	{
+ 		if (_isLarge)
+-			Utils.DrawBorderStringBig(spriteBatch, text, pos, _color, _textScale);
++			Utils.DrawBorderStringBig(spriteBatch, text, position, color, _textScale);
+ 		else
+-			Utils.DrawBorderString(spriteBatch, text, pos, _color, _textScale);
++			Utils.DrawBorderString(spriteBatch, text, position, color, _textScale);
+ 	}
+ }

@@ -1,0 +1,63 @@
+--- src/Terraria/Terraria/UI/ChestUI.cs
++++ src/TerrariaNetCore/Terraria/UI/ChestUI.cs
+@@ -2,6 +_,9 @@
+ using Microsoft.Xna.Framework;
+ using Microsoft.Xna.Framework.Graphics;
+ using Microsoft.Xna.Framework.Input;
++using ReLogic.Graphics;
++using ReLogic.Localization.IME;
++using ReLogic.OS;
+ using Terraria.Audio;
+ using Terraria.DataStructures;
+ using Terraria.GameContent;
+@@ -76,20 +_,6 @@
+ 		string text = string.Empty;
+ 		if (Main.editChest) {
+ 			text = Main.npcChatText;
+-			Main.instance.textBlinkerCount++;
+-			if (Main.instance.textBlinkerCount >= 20) {
+-				if (Main.instance.textBlinkerState == 0)
+-					Main.instance.textBlinkerState = 1;
+-				else
+-					Main.instance.textBlinkerState = 0;
+-
+-				Main.instance.textBlinkerCount = 0;
+-			}
+-
+-			if (Main.instance.textBlinkerState == 1)
+-				text += "|";
+-
+-			Main.instance.DrawWindowsIMEPanel(new Vector2(120f, 518f));
+ 		}
+ 		else if (player.chest > -1) {
+ 			if (Main.chest[player.chest] == null)
+@@ -127,10 +_,25 @@
+ 		Color color = new Color(Main.mouseTextColor, Main.mouseTextColor, Main.mouseTextColor, Main.mouseTextColor);
+ 		color = Color.White * (1f - (255f - (float)(int)Main.mouseTextColor) / 255f * 0.5f);
+ 		color.A = byte.MaxValue;
+-		Utils.WordwrapString(text, FontAssets.MouseText.Value, 200, 1, out var lineAmount);
+-		lineAmount++;
+-		for (int i = 0; i < lineAmount; i++) {
+-			ChatManager.DrawColorCodedStringWithShadow(spritebatch, FontAssets.MouseText.Value, text, new Vector2(504f, Main.instance.invBottom + i * 26), color, 0f, Vector2.Zero, Vector2.One, -1f, 1.5f);
++		DynamicSpriteFont value = FontAssets.MouseText.Value;
++		Vector2 vector = new Vector2(504f, Main.instance.invBottom);
++		ChatManager.DrawColorCodedStringWithShadow(spritebatch, value, text, vector, color, 0f, Vector2.Zero, Vector2.One, -1f, 1.5f);
++		if (Main.editChest) {
++			vector.X += value.MeasureString(text).X;
++			Main.instance.DrawWindowsIMEPanel(vector + new Vector2(0f, 56f));
++			string compositionString = Platform.Get<IImeService>().CompositionString;
++			if (!string.IsNullOrEmpty(compositionString)) {
++				ChatManager.DrawColorCodedStringWithShadow(spritebatch, value, compositionString, vector, Main.imeCompositionStringColor, 0f, Vector2.Zero, Vector2.One, -1f, 1.5f);
++				vector.X += value.MeasureString(compositionString).X;
++			}
++
++			if (++Main.instance.textBlinkerCount >= 20) {
++				Main.instance.textBlinkerState = ((Main.instance.textBlinkerState == 0) ? 1 : 0);
++				Main.instance.textBlinkerCount = 0;
++			}
++
++			if (Main.instance.textBlinkerState == 1)
++				ChatManager.DrawColorCodedStringWithShadow(spritebatch, value, "|", vector, color, 0f, Vector2.Zero, Vector2.One, -1f, 1.5f);
+ 		}
+ 	}
+ 
